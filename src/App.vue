@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { Settings as SettingsIcon } from 'lucide-vue-next';
 import confetti from 'canvas-confetti';
 import Wheel from './components/Wheel.vue';
@@ -23,6 +23,7 @@ const defaultSettings: WheelSettings = {
   spinDuration: 5,
   pointerColor: '#EF4444',
   fontFamily: 'Inter',
+  soundEnabled: true,
 };
 
 const segments = ref<Segment[]>(defaultSegments);
@@ -34,6 +35,67 @@ const isSpinning = ref(false);
 const winner = ref<Segment | null>(null);
 
 const activeSegments = computed(() => segments.value.filter(s => s.count > 0));
+
+// Audio Context for ticking sound
+let audioCtx: AudioContext | null = null;
+const initAudio = () => {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+};
+
+const playTick = () => {
+  if (!settings.value.soundEnabled) return;
+  initAudio();
+  if (!audioCtx) return;
+
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+
+  oscillator.type = 'sine';
+  oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.04);
+
+  gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  oscillator.start();
+  oscillator.stop(audioCtx.currentTime + 0.04);
+};
+
+// Track rotation for ticks
+let lastTickSegment = -1;
+let rafId: number | null = null;
+
+const trackRotation = () => {
+  const wheel = document.getElementById('wheel-container');
+  if (!wheel || !isSpinning.value) {
+    if (rafId) cancelAnimationFrame(rafId);
+    return;
+  }
+
+  const style = window.getComputedStyle(wheel);
+  const matrix = new DOMMatrixReadOnly(style.transform);
+  const angle = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
+  const normalizedAngle = (angle + 360) % 360;
+  
+  const segmentSize = 360 / activeSegments.value.length;
+  const currentSegment = Math.floor(normalizedAngle / segmentSize);
+
+  if (currentSegment !== lastTickSegment) {
+    playTick();
+    lastTickSegment = currentSegment;
+  }
+
+  rafId = requestAnimationFrame(trackRotation);
+};
+
+onUnmounted(() => {
+  if (rafId) cancelAnimationFrame(rafId);
+});
 
 // Load from localStorage on mount
 onMounted(() => {
@@ -72,6 +134,8 @@ const handleSpin = () => {
   
   isSpinning.value = true;
   winner.value = null;
+  lastTickSegment = -1;
+  trackRotation();
 
   // Calculate new rotation
   const spins = 5 + Math.floor(Math.random() * 5); // 5 to 9 full spins

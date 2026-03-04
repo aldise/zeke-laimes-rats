@@ -17,4 +17,5 @@ export type WheelSettings = {
   pointerColor: string;
   backgroundImageUrl?: string;
   fontFamily?: string;
+  soundEnabled?: boolean;
 };

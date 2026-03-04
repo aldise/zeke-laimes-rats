@@ -63,6 +63,7 @@ const wheelStyle = computed(() => ({
 
     <!-- Wheel -->
     <div
+      id="wheel-container"
       class="w-full h-full rounded-full shadow-2xl overflow-hidden border-8 border-white/20"
       :style="wheelStyle"
     >
