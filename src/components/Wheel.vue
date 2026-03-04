@@ -85,11 +85,11 @@ const wheelStyle = computed(() => ({
             v-if="segment.imageUrl"
             :href="segment.imageUrl"
             clip-path="url(#slice-clip)"
-            :x="(radius / 2) - (radius * (segment.imageZoom || 1) / 2)"
-            :y="-(radius * (segment.imageZoom || 1))"
-            :width="radius * (segment.imageZoom || 1)"
-            :height="radius * 2 * (segment.imageZoom || 1)"
-            preserveAspectRatio="xMidYMid slice"
+            :x="radius * 0.6 - (radius * 0.4 * (segment.imageZoom || 1) / 2)"
+            :y="-(radius * 0.4 * (segment.imageZoom || 1) / 2)"
+            :width="radius * 0.4 * (segment.imageZoom || 1)"
+            :height="radius * 0.4 * (segment.imageZoom || 1)"
+            preserveAspectRatio="xMidYMid meet"
           />
 
           <text
