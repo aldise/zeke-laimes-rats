@@ -5,6 +5,7 @@ export type Segment = {
   textColor: string;
   count: number;
   imageUrl?: string;
+  imageZoom?: number;
   hideText?: boolean;
 };
 

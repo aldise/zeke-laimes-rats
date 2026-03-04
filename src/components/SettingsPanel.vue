@@ -406,6 +406,31 @@ const handleImport = (e: Event) => {
                   />
                 </div>
 
+                <div v-if="segment.imageUrl" class="pt-2 border-t border-gray-200">
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="block text-xs font-medium text-gray-500">Attēla mērogs (Zoom)</label>
+                    <div class="flex items-center gap-2">
+                      <button 
+                        v-if="(segment.imageZoom || 1) !== 1"
+                        @click="updateSegment(segment.id, 'imageZoom', 1)"
+                        class="text-[10px] text-blue-500 hover:text-blue-700 font-medium"
+                      >
+                        Atiestatīt
+                      </button>
+                      <span class="text-[10px] text-gray-400">{{ Math.round((segment.imageZoom || 1) * 100) }}%</span>
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="3"
+                    step="0.1"
+                    :value="segment.imageZoom || 1"
+                    @input="e => updateSegment(segment.id, 'imageZoom', parseFloat((e.target as HTMLInputElement).value))"
+                    class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                </div>
+
                 <div class="flex items-center gap-2 mt-1">
                   <input
                     type="checkbox"
